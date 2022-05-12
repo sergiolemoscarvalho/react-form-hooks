@@ -1,44 +1,185 @@
-import { useState } from 'react'
-import logo from './logo.svg'
+import React, { Fragment } from 'react'
+import { useForm, Controller } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as Yup from 'yup'
+import { Paper, Box, Grid, Container, TextField, Typography, FormControlLabel, Checkbox, Button } from '@material-ui/core'
+
+
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const validationSchema = Yup.object().shape({
+    fullname: Yup.string().required('Full name is required'),
+    username: Yup.string()
+      .required('Username is required')
+      .min(6, 'Username must be at least 6 characters')
+      .max(20, 'Username must not exceed 20 characters'),
+    email: Yup.string()
+      .required ('E-mail is required')
+      .email( 'E-mail is invalid'),
+    password: Yup.string()
+      .required ('Password is required')
+      .min(6, 'Password must be at least 6 characters')
+      .max(40, 'Password must not exceed 40 characters'),
+    confirmPassword: Yup.string()
+      .required('Confirm password is required')
+      .oneOf([Yup.ref('password'), null], 'Confirm password does not match'),
+      acceptTerms: Yup.bool().oneOf([true], 'Accept Terms is required')
+  });
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: {errors}
+  } = useForm ({
+    resolver: yupResolver (validationSchema)
+  })
+  
+   const onSubmit = data => {
+     console.log(JSON.stringify(data, null, 2))
+   }
+ 
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
-        <p>
-          <button type="button" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
-          </button>
-        </p>
-        <p>
-          Edit <code>App.jsx</code> and save to test HMR updates.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          {' | '}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Vite Docs
-          </a>
-        </p>
-      </header>
-    </div>
+    <Fragment>
+      <Container maxWidth="sm">
+         <Paper variant='outline' elevation={12} className="padding-box">
+        <Box px={10} py={2} mt={20}>
+          <Typography variant='h6' align='center' margin='dense'>
+            React Hook Form - Material UI - Validação
+          </Typography>
+          <Grid container spacing={1}>
+
+           
+            <Grid item xs={12} sm={12}>
+              <TextField
+                required
+                id='fullname'
+                name='fullname'
+                label='Nome Completo'
+                fullWidth
+                margin='dense'
+                {...register('fullname')}
+                error={errors.fullname ? true : false}
+                />
+              <Typography variant='inherit' color='textSecondary'>
+                {errors.fullname?.message}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id='username'
+                label='Usuário'
+                fullWidth
+                margin='dense'
+                {...register('username')}
+                error={errors.username ? true : false}
+              />
+              <Typography variant='inherit' color='textSecondary'>
+                {errors.username?.message}
+              </Typography>
+
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id='email'
+                name='email'
+                label='E-mail'
+                fullWidth
+                margin='dense'
+                {...register('email')}
+                error={errors.email ? true : false}
+                />
+                <Typography variant='inherit' color='textSecondary'>
+                  {errors.email?.message}
+                </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id='password'
+                name='password'
+                label='Senha'
+                type='password'
+                fullWidth
+                margin='dense'
+                {...register('password')}
+                error={errors.password ? true : false}
+              />
+              <Typography variant='inherit' color='textSecondary'>
+                {errors.password?.message}
+              </Typography>
+
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id='confirmPassword'
+                name='confirmPassword'
+                label='Confirme a Senha'
+                type='password'
+                fullWidth
+                margin='dense'
+                {...register('confirmPassword')}
+                error={errors.confirmPassword ? true : false}
+              />
+              <Typography variant='inherit' color='textSecondary'>
+                {errors.confirmPassword?.message}
+              </Typography>
+
+            </Grid>
+           
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={
+                  <Controller
+                    control={control}
+                    name='acceptTerms'
+                    defaultValue='false'
+                    inputRef={register()}
+                    render={({ field: { onChange } }) => (
+                      <Checkbox
+                        color='primary'
+                        onChange={ (e) => onChange(e.target.checked)}
+                       
+                        
+                      />
+                    )}
+                    
+                  />
+                }
+                label={
+                  <Typography color={errors.acceptTerms ? 'error' : 'inherit'} >
+                    Eu li e concordo com os termos.
+                  </Typography>
+                }
+              />
+              <br />
+              <Typography variant='inherit' color='textSecondary'>
+                {errors.acceptTerms ? '(' + errors.acceptTerms.message + ')' : ''}
+              </Typography>
+            </Grid>
+          </Grid>
+          <Box mt={3}>
+            <Button
+              variant='contained'
+              color='primary'
+              onClick={handleSubmit(onSubmit)}
+            >
+              Registro
+            </Button>
+          </Box>
+        </Box>
+      </Paper>
+      </Container>
+
+     
+    </Fragment>
+   
   )
 }
 
